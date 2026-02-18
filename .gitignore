@@ -1,0 +1,12 @@
+.vscode/
+.Build/
+Repo.sh
+*.o
+*.obj
+*.log
+*.tmp
+*.swp
+*.img
+*.iso
+Backup/
+Dependencies/
