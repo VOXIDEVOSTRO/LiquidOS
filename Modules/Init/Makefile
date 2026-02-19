@@ -34,7 +34,7 @@ Cflg := \
 -g \
 -I../../Core/Headers \
 -IIncludes \
--I../Dependency/Includes
+-I../Libraries/Includes
 
 FinalTemp := ../.Build
 LocalTemp := .Build
@@ -42,7 +42,7 @@ LocalTemp := .Build
 ModuleName := STANDARD_Init.ko
 InstallPath := $(LocalTemp)
 
-EXTERNAL_LIB ?= ../Dependency/.Build/LIB_Dependencies.a
+EXTERNAL_LIB ?= ../Libraries/.Build/DEF_Library.a
 
 Cs := $(shell find . -type f -name "*.c")
 Os := $(patsubst ./%.c,$(LocalTemp)/%.o,$(Cs))

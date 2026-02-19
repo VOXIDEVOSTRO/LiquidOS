@@ -39,7 +39,7 @@ Cflg := \
 FinalTemp := ../.Build
 LocalTemp := .Build
 
-ModuleName := LIB_Dependencies.a
+ModuleName := DEF_Library.a
 InstallPath := $(LocalTemp)
 
 Cs := $(shell find . -type f -name "*.c")
