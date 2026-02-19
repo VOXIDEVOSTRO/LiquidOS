@@ -9,8 +9,6 @@ ERROR_KEYS_REGISTRY ErrorKeysRegistry =
     .NextModuleBase = MaxTraceback
 };
 
-#include <minmax.h>
-
 int RegisterErrorKeys(const char* ModuleName, const char* (*TraceMapper)(int), int TracebackCount, SYSTEM_ERROR* Error)
 {
     #define ErrorOut_RegisterErrorContext(Code) \
