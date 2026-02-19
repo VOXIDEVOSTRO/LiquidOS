@@ -1,6 +1,8 @@
 #include <__KCONF.h>
-#include <Dependency/Formatter.h>
-#include <Dependency/Emmiter.h>
+
+/*Local*/
+#include <Formatter.h>
+#include <Emmiter.h>
 
 void
 ProcessInteger(__builtin_va_list* Arguments, FORMATTER_FLAGS* Flags, int Base, int Signed)

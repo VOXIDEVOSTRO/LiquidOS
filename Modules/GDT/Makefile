@@ -1,4 +1,5 @@
 Compiler := gcc
+
 Cflg := \
 -std=c11 \
 -ffreestanding \
@@ -32,7 +33,8 @@ Cflg := \
 -O2 \
 -g \
 -I../../Core/Headers \
--IIncludes
+-IIncludes \
+-I../Dependency/Includes
 
 FinalTemp := ../.Build
 LocalTemp := .Build
@@ -40,8 +42,10 @@ LocalTemp := .Build
 ModuleName := GDT.ko
 InstallPath := $(LocalTemp)
 
+EXTERNAL_LIB ?= ../Dependency/.Build/LIB_Dependencies.a
+
 Cs := $(shell find . -type f -name "*.c")
-Os := $(patsubst %.c,$(LocalTemp)/%.o,$(Cs))
+Os := $(patsubst ./%.c,$(LocalTemp)/%.o,$(Cs))
 
 .PHONY: \
 	all \
@@ -55,7 +59,7 @@ $(LocalTemp)/%.o: %.c
 
 $(InstallPath)/$(ModuleName): $(Os)
 	@mkdir -p $(InstallPath)
-	$(Compiler) -nostdlib -r -o $@ $(Os)
+	$(Compiler) -nostdlib -r -o $@ $(Os) $(EXTERNAL_LIB)
 
 clean:
 	@rm -rf $(LocalTemp)

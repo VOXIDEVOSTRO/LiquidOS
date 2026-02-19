@@ -1,8 +1,8 @@
 #include <Errors.h>
 
-/*LOCAL INCLUDES*/
-#include <Dependency/Formatter.h>
-#include <Dependency/Emmiter.h>
+/*Local*/
+#include <Formatter.h>
+#include <Emmiter.h>
 
 void
 PError(const char* Format, ...)

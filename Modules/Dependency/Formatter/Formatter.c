@@ -1,6 +1,8 @@
 #include <__KCONF.h>
-#include <Dependency/Formatter.h>
-#include <Dependency/Emmiter.h>
+
+/*Local*/
+#include <Formatter.h>
+#include <Emmiter.h>
 
 void
 KrnPrintf(const char* Format, ...)

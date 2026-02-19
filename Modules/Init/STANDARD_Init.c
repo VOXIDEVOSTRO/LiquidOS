@@ -6,8 +6,11 @@
 #include <Errors.h>
 
 /*LOCAL INCLUDES*/
-#include <Dependency/Formatter.h>
-#include <Dependency/Emmiter.h>
+#include <Wraps.h>
+
+/*LIB INCLUDES*/
+#include <Formatter.h>
+#include <Emmiter.h>
 
 /*THIS IS A MODULARUS CORE STANDARD FILE WITH A STANDARD NAME OF "STANDARD_Init"
   The job of this file is to handle ITS own modules and init sequence.*/

@@ -1,4 +1,5 @@
 Compiler := gcc
+AR := ar
 
 Cflg := \
 -std=c11 \
@@ -33,16 +34,13 @@ Cflg := \
 -O2 \
 -g \
 -I../../Core/Headers \
--IIncludes \
--I../Dependency/Includes
+-IIncludes
 
 FinalTemp := ../.Build
 LocalTemp := .Build
 
-ModuleName := STANDARD_Init.ko
+ModuleName := LIB_Dependencies.a
 InstallPath := $(LocalTemp)
-
-EXTERNAL_LIB ?= ../Dependency/.Build/LIB_Dependencies.a
 
 Cs := $(shell find . -type f -name "*.c")
 Os := $(patsubst ./%.c,$(LocalTemp)/%.o,$(Cs))
@@ -59,7 +57,7 @@ $(LocalTemp)/%.o: %.c
 
 $(InstallPath)/$(ModuleName): $(Os)
 	@mkdir -p $(InstallPath)
-	$(Compiler) -nostdlib -r -o $@ $(Os) $(EXTERNAL_LIB)
+	$(AR) rcs $@ $(Os)
 
 clean:
 	@rm -rf $(LocalTemp)
