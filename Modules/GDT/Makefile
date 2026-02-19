@@ -33,7 +33,7 @@ Cflg := \
 -O2 \
 -g \
 -I../../Core/Headers \
--IIncludes \
+-I../Includes \
 -I../Libraries/Includes
 
 FinalTemp := ../.Build
