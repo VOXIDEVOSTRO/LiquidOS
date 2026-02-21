@@ -1,6 +1,10 @@
 #pragma once
 
-/*Error codes with trace backs*/
+#include <__KCONF.h>
+
+#include <BuiltIns/Logger/Formatter.h>
+
+/*Error codes with Trace backs*/
 
 /*Global*/
 typedef
@@ -63,7 +67,7 @@ enum
     EBADR           = 53,  /* Invalid request descriptor */           /* 53 */
     EXFULL          = 54,  /* Exchange full */                         /* 54 */
     ENOANO          = 55,  /* No anode */                               /* 55 */
-    EBADRQC         = 56,  /* Invalid request code */                  /* 56 */
+    EBADRQC         = 56,  /* Invalid request Code */                  /* 56 */
     EBADSLT         = 57,  /* Invalid slot */                           /* 57 */
     EBFONT          = 59,  /* Bad font file format */                  /* 59 */
     ENOSTR          = 60,  /* Device not a stream */                   /* 60 */
@@ -268,74 +272,139 @@ enum
     MaxTraceback = 10000,
 } TRACEBACK_ID; /*Can also be called function IDs*/
 
+/*Per module*/
+typedef struct ERROR_KEYS
+{
+    const char* ModuleName;
+    int TracebackCount;
+
+    /*Operations*/
+    const char* (*TraceMapper)(int);
+
+    struct ERROR_KEYS* Next;
+} ERROR_KEYS;
+
+typedef struct
+{
+    ERROR_KEYS* Head;
+    ERROR_KEYS* Tail;
+
+    int NextModuleBase;  /* Next available base ID */
+} ERROR_KEYS_REGISTRY;
+
+extern ERROR_KEYS_REGISTRY ErrorKeysRegistry;
+
 /*Core Error stuff*/
 typedef
 struct
 {
     int ErrorCode;
+    const ERROR_KEYS* Context;
     int TraceBack;
 } SYSTEM_ERROR;
 
 /*Main reporter*/
-#define ErrorOut(ErrorSlot, Code, Trace)      \
-    do                                        \
-    {                                         \
-        if ((ErrorSlot) != NULL)              \
-        {                                     \
-            (ErrorSlot)->ErrorCode = (Code);  \
-            (ErrorSlot)->TraceBack = (Trace); \
-        }                                     \
-    } while (0)
+#ifndef TRACEBACK
+    #define ErrorOut(ErrorSlot, Module, Code, Trace)      \
+        do                                                \
+        {                                                 \
+            if ((ErrorSlot) != NULL)                      \
+            {                                             \
+                (ErrorSlot)->ErrorCode = (Code);          \
+                (ErrorSlot)->Context = Module;            \
+                (ErrorSlot)->TraceBack = (Trace);         \
+            }                                             \
+        } while (0)
+#else
+    #ifdef ERRORS
+        #define ErrorOut(ErrorSlot, Module, Code, Trace)                           \
+        do                                                                         \
+        {                                                                          \
+            if ((ErrorSlot) != NULL)                                               \
+            {                                                                      \
+                (ErrorSlot)->ErrorCode = (Code);                                   \
+                (ErrorSlot)->Context = Module;                                     \
+                (ErrorSlot)->TraceBack = (Trace);                                  \
+                                                                                   \
+                int __err_signed = (Code);                                         \
+                const char* __err_string = MapError(ErrorSlot);                    \
+                                                                                   \
+                const char* __err_reason = MapErrorReason(ErrorSlot);              \
+                                                                                   \
+                const char* __trace_string = TraceError(ErrorSlot);                \
+                                                                                   \
+                PError("Errored\n");                                               \
+                                                                                   \
+                KrnPrintf("                 Code  : %d | %s\n",                    \
+                          __err_signed, __err_string);                             \
+                KrnPrintf("                 Reason: %s\n", __err_reason);          \
+                KrnPrintf("                 Trace : %d -> %s\n",                   \
+                          (Trace), __trace_string);                                \
+            }                                                                      \
+        } while (0)
+    #else
+        #define ErrorOut(ErrorSlot, Module, Code, Trace)      \
+            do                                                \
+            {                                                 \
+                if ((ErrorSlot) != NULL)                      \
+                {                                             \
+                    (ErrorSlot)->ErrorCode = (Code);          \
+                    (ErrorSlot)->Context = Module;            \
+                    (ErrorSlot)->TraceBack = (Trace);         \
+                }                                             \
+            } while (0)
+    #endif
+#endif
 
 /*For Pointers ofc*/
 #define Error2Pointer(Code)((void*)(intptr_t)(Code))
 #define Pointer2Error(Pointer)((int)(intptr_t)(Pointer))
 #define Probe4Error(Pointer)((intptr_t)(Pointer) < 0 && (intptr_t)(Pointer) >= -MaxErrors)
 
-/*String maps for the error code enum*/
+/*String maps for the error Code enum*/
 /*Global*/
 static const char*
-ErrorMap[MaxErrors]=
+ErrorReasonMap[MaxErrors]=
 {
-    [0]  = "Success",
+    [0]  = "Success/OK",
     [1]  = "Operation not permitted",
-    [2]  = "No such file or directory",
+    [2]  = "No such file or directory/Not Found",
     [3]  = "No such process",
     [4]  = "Interrupted system call",
     [5]  = "I/O error",
-    [6]  = "No such device or address",
+    [6]  = "No such device or address/No such entity",
     [7]  = "Argument list too long",
     [8]  = "Exec format error",
-    [9]  = "Bad file descriptor",
+    [9]  = "Bad file descriptor/Bad handle",
     [10] = "No child processes",
     [11] = "Resource temporarily unavailable / would block",
-    [12] = "Cannot allocate memory",
-    [13] = "Permission denied",
-    [14] = "Bad address",
+    [12] = "Cannot allocate memory/Not enough memory",
+    [13] = "Permission denied/Access denied",
+    [14] = "Bad address/Not canonical",
     [15] = "Block device required",
-    [16] = "Device or resource busy",
-    [17] = "File exists",
+    [16] = "Device or resource busy/Busy loop",
+    [17] = "File exists/Already exists",
     [18] = "Invalid cross-device link",
-    [19] = "No such device",
+    [19] = "No such device/No such entity",
     [20] = "Not a directory",
     [21] = "Is a directory",
-    [22] = "Invalid argument",
-    [23] = "File table overflow",
-    [24] = "Too many open files",
+    [22] = "Invalid argument/Bad parameters",
+    [23] = "File table overflow/Overflow",
+    [24] = "Too many open files/Too many to handle",
     [25] = "Inappropriate ioctl for device",
     [26] = "Text file busy",
     [27] = "File too large",
-    [28] = "No space left on device",
+    [28] = "No space left on device/Not enough space",
     [29] = "Illegal seek",
-    [30] = "Read-only file system",
+    [30] = "Read-only file system/Read-only entity",
     [31] = "Too many links",
     [32] = "Broken pipe",
     [33] = "Numerical argument out of domain",
     [34] = "Numerical result out of range",
     [35] = "Resource deadlock avoided",
-    [36] = "File name too long",
+    [36] = "File name too long/Too long path",
     [37] = "No record locks available",
-    [38] = "Function not implemented",
+    [38] = "Function not implemented/No such operation",
     [39] = "Directory not empty",
     [40] = "Too many symbolic links encountered",
     [42] = "No message of desired type",
@@ -352,9 +421,9 @@ ErrorMap[MaxErrors]=
     [53] = "Invalid request descriptor",
     [54] = "Exchange full",
     [55] = "No anode",
-    [56] = "Invalid request code",
+    [56] = "Invalid request Code/Bad request",
     [57] = "Invalid slot",
-    [59] = "Bad font file format",
+    [59] = "Bad font file format/Not in format",
     [60] = "Device not a stream",
     [61] = "No data available",
     [62] = "Timer expired",
@@ -366,13 +435,13 @@ ErrorMap[MaxErrors]=
     [68] = "Advertise error",
     [69] = "Srmount error",
     [70] = "Communication error on send",
-    [71] = "Protocol error",
+    [71] = "Protocol error/Bad protocol/Bad command",
     [72] = "Multihop attempted",
     [73] = "RFS specific error",
     [74] = "Not a data message",
-    [75] = "Value too large for defined data type",
+    [75] = "Value too large for defined data type/Too big to fit in range",
     [76] = "Name not unique on network",
-    [77] = "File descriptor in bad state",
+    [77] = "File descriptor in bad state/Bad handle",
     [78] = "Remote address changed",
     [79] = "Cannot access needed shared library",
     [80] = "Corrupted shared library",
@@ -396,13 +465,124 @@ ErrorMap[MaxErrors]=
     [106]= "Transport endpoint is already connected",
     [107]= "Transport endpoint is not connected",
     [108]= "Cannot send after shutdown",
-    [109]= "Too many references",
+    [109]= "Too many references/Redefined",
     [110]= "Connection timed out",
     [111]= "Connection refused",
     [112]= "Host is down",
     [113]= "Host unreachable",
     [114]= "Operation already in progress",
     [115]= "Operation now in progress",
+};
+
+static const char*
+ErrorMap[MaxErrors]=
+{
+    [0]   = "OK",
+    [1]   = "EPERM", 
+    [2]   = "ENOENT", 
+    [3]   = "ESRCH", 
+    [4]   = "EINTR", 
+    [5]   = "EIO", 
+    [6]   = "ENXIO", 
+    [7]   = "E2BIG", 
+    [8]   = "ENOEXEC", 
+    [9]   = "EBADF", 
+    [10]  = "ECHILD", 
+    [11]  = "EAGAIN", 
+    [12]  = "ENOMEM",
+    [13]  = "EACCES",
+    [14]  = "EFAULT",
+    [15]  = "ENOTBLK",
+    [16]  = "EBUSY",
+    [17]  = "EEXIST",
+    [18]  = "EXDEV",
+    [19]  = "ENODEV",
+    [20]  = "ENOTDIR",
+    [21]  = "EISDIR",
+    [22]  = "EINVAL",
+    [23]  = "ENFILE",
+    [24]  = "EMFILE",
+    [25]  = "ENOTTY",
+    [26]  = "ETXTBSY",
+    [27]  = "EFBIG",
+    [28]  = "ENOSPC",
+    [29]  = "ESPIPE",
+    [30]  = "EROFS",
+    [31]  = "EMLINK",
+    [32]  = "EPIPE",
+    [33]  = "EDOM",
+    [34]  = "ERANGE",
+    [35]  = "EDEADLK",
+    [36]  = "ENAMETOOLONG",
+    [37]  = "ENOLCK",
+    [38]  = "ENOSYS",
+    [39]  = "ENOTEMPTY",
+    [40]  = "ELOOP",
+    [42]  = "ENOMSG",
+    [43]  = "EIDRM",
+    [44]  = "ECHRNG",
+    [45]  = "EL2NSYNC",
+    [46]  = "EL3HLT",
+    [47]  = "EL3RST",
+    [48]  = "ELNRNG",
+    [49]  = "EUNATCH",
+    [50]  = "ENOCSI",
+    [51]  = "EL2HLT",
+    [52]  = "EBADE",
+    [53]  = "EBADR",
+    [54]  = "EXFULL",
+    [55]  = "ENOANO",
+    [56]  = "EBADRQC",
+    [57]  = "EBADSLT",
+    [59]  = "EBFONT",
+    [60]  = "ENOSTR",
+    [61]  = "ENODATA",
+    [62]  = "ETIME",
+    [63]  = "ENOSR",
+    [64]  = "ENONET",
+    [65]  = "ENOPKG",
+    [66]  = "EREMOTE",
+    [67]  = "ENOLINK",
+    [68]  = "EADV",
+    [69]  = "ESRMNT",
+    [70]  = "ECOMM",
+    [71]  = "EPROTO",
+    [72]  = "EMULTIHOP",
+    [73]  = "EDOTDOT",
+    [74]  = "EBADMSG",
+    [75]  = "EOVERFLOW",
+    [76]  = "ENOTUNIQ",
+    [77]  = "EBADFD",
+    [78]  = "EREMCHG",
+    [79]  = "ELIBACC",
+    [80]  = "ELIBBAD",
+    [81]  = "ELIBSCN",
+    [82]  = "ELIBMAX",
+    [83]  = "ELIBEXEC",
+    [84]  = "EILSEQ",
+    [85]  = "ERESTART",
+    [86]  = "ESTRPIPE",
+    [95]  = "EOPNOTSUPP",
+    [96]  = "EPFNOSUPPORT",
+    [97]  = "EAFNOSUPPORT",
+    [98]  = "EADDRINUSE",
+    [99]  = "EADDRNOTAVAIL",
+    [100] = "ENETDOWN", 
+    [101] = "ENETUNREACH",
+    [102] = "ENETRESET",
+    [103] = "ECONNABORTED",
+    [104] = "ECONNRESET",
+    [105] = "ENOBUFS",
+    [106] = "EISCONN",
+    [107] = "ENOTCONN",
+    [108] = "ESHUTDOWN",
+    [109] = "ETOOMANYREFS",
+    [110] = "ETIMEDOUT",
+    [111] = "ECONNREFUSED",
+    [112] = "EHOSTDOWN", 
+    [113] = "EHOSTUNREACH",
+    [114] = "EALREADY",
+    [115] = "EINPROGRESS"
 };
 
 /*Core Local*/
@@ -548,62 +728,54 @@ TraceBackMap[MaxTraceback]=
     "Core/System/*->System_Ioctl",
 };
 
-/*Another helper but to map the enum code to a error string map*/
+/*Another helper but to map the enum Code to a error string map*/
 static inline const char*
-MapError(SYSTEM_ERROR* Error)
+MapErrorReason(const SYSTEM_ERROR* Error)
 {
-    if (Error->ErrorCode < 0)
+    int Code = Error->ErrorCode;
+    if (Code < 0)
     {
-        Error->ErrorCode = -Error->ErrorCode;
+        Code = -Code;
     }
-    if (Error->ErrorCode >= MaxErrors)
+
+    if (Code >= MaxErrors)
     {
         return "Bad Error";
     }
-    return ErrorMap[Error->ErrorCode];
+
+    return ErrorReasonMap[Code];
 }
 
-/*Another helper but to map the traceback code to the location of the error from map*/
 static inline const char*
-CORE_TraceError(SYSTEM_ERROR* Error)
+MapError(const SYSTEM_ERROR* Error)
 {
-    if (Error->ErrorCode < 0)
+    int Code = Error->ErrorCode;
+    if (Code < 0)
     {
-        Error->ErrorCode = -Error->ErrorCode;
+        Code = -Code;
     }
-    if (Error->ErrorCode >= MaxErrors)
+
+    if (Code >= MaxErrors)
     {
         return "Bad Error";
     }
-    if (Error->TraceBack >= MaxTraceback)
+
+    return ErrorMap[Code];
+}
+
+/*Another helper but to map the traceback Code to the location of the error from map*/
+static inline const char*
+CORE_TraceError(const SYSTEM_ERROR* Error)
+{
+    int Trace = Error->TraceBack;
+
+    if (Trace < 0 || Trace >= MaxTraceback)
     {
         return "Bad TraceBack";
     }
-    return TraceBackMap[Error->TraceBack];
+
+    return TraceBackMap[Trace];
 }
 
-/*Per module*/
-typedef struct ERROR_KEYS
-{
-    const char* ModuleName;
-    int TracebackBase;
-    int TracebackCount;
-
-    /*Operations*/
-    const char* (*TraceMapper)(int);
-
-    struct ERROR_KEYS* Next;
-} ERROR_KEYS;
-
-typedef struct
-{
-    ERROR_KEYS* Head;
-    ERROR_KEYS* Tail;
-
-    int NextModuleBase;  /* Next available base ID */
-} ERROR_KEYS_REGISTRY;
-
-extern ERROR_KEYS_REGISTRY ErrorKeysRegistry;
-
-int RegisterErrorKeys(const char*, const char* (*TraceMapper)(int), int, SYSTEM_ERROR*);
+const ERROR_KEYS* RegisterErrorKeys( const char*, const char* (*TraceMapper)(int), int, SYSTEM_ERROR*);
 const char* TraceError(SYSTEM_ERROR*);

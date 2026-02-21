@@ -14,6 +14,36 @@ static MODULE_EXIT ModuleExit = 0;
 
 SYSTEM_NODE* LinkerNode = NULL;
 
+static const ERROR_KEYS* LinkerContext;
+
+enum
+{
+    FUNC_Linker_Ioctl,
+    FUNC_Module_Link,
+    FUNC_Module_Run,
+    FUNC_Module_Exit,
+
+    Max_Linker_Traces
+};
+
+static const char* Linker_TraceMapper(int ID)
+{
+    static const char* TraceTable[] =
+    {
+        "Core/BuiltIns/Linker/*->Linker_Ioctl",
+        "Core/BuiltIns/Linker/*->Module_Link",
+        "Core/BuiltIns/Linker/*->Module_Run",
+        "Core/BuiltIns/Linker/*->Module_Exit",
+    };
+
+    if (ID < 0 || ID >= Max_Linker_Traces)
+    {
+        return "Unknown";
+    }
+
+    return TraceTable[ID];
+}
+
 int Linker_Open(SYSTEM_NODE* Node __unused, SYSTEM_FILE* File __unused, SYSTEM_ERROR* Error __unused)
 {
     return GeneralOK;
@@ -27,7 +57,7 @@ int Linker_Close(SYSTEM_FILE* File __unused, SYSTEM_ERROR* Error __unused)
 long Linker_Ioctl(SYSTEM_FILE* File __unused, uint64_t Request, void* Arguments, SYSTEM_ERROR* Error)
 {
     #define ErrorOut_Linker_Ioctl(Code) \
-        ErrorOut(Error, Code, General)
+        ErrorOut(Error, LinkerContext, Code, FUNC_Linker_Ioctl)
 
     switch(Request)
     {
@@ -40,23 +70,24 @@ long Linker_Ioctl(SYSTEM_FILE* File __unused, uint64_t Request, void* Arguments,
                 return Error->ErrorCode;
             }
 
-            if (!Module_Link(ModuleImage, Error))
+            void* ModuleBase = Module_Link(ModuleImage, Error);
+            if (Probe4Error(ModuleBase) || !ModuleBase)
             {
+                ErrorOut_Linker_Ioctl(Error->ErrorCode);
                 return Error->ErrorCode;
             }
+
             return GeneralOK;
         }
 
         case LinkerCommand_RUN:
         {
-            Module_Run(Error);
-            return GeneralOK;
+            return Module_Run(Error);
         }
 
         case LinkerCommand_EXIT:
         {
-            Module_Exit(Error);
-            return GeneralOK;
+            return Module_Exit(Error);
         }
 
         default:
@@ -93,6 +124,7 @@ void Linker_Init(SYSTEM_ERROR* Error)
         {
             System_AttachNode(SystemRoot, LinkerNode, Error);
         }
+        LinkerContext = RegisterErrorKeys("BuiltIn_LInker", Linker_TraceMapper, Max_Linker_Traces, Error);
     }
 }
 
@@ -109,12 +141,10 @@ static uint64_t Module_SectionToVirtualAddress(void* ImageBase, ELF64_HEADER* He
 void* Module_Link(void* ImageBase, SYSTEM_ERROR* Error)
 {
     #define ErrorOut_Module_Link(Code) \
-        ErrorOut(Error, Code, General)
+        ErrorOut(Error, LinkerContext, Code, FUNC_Module_Link)
 
     ELF64_HEADER* ELFHeader = (ELF64_HEADER*)ImageBase;
-
     ELF64_SECTION_HEADER* SectionHeaders = (ELF64_SECTION_HEADER*)((uint8_t*)ImageBase + ELFHeader->e_shoff);
-
     ELF64_SYMBOL* SymbolTable = 0;
     const char* StringTable = 0;
     ELF64_SECTION_HEADER* SymbolSection = 0;
@@ -151,7 +181,6 @@ void* Module_Link(void* ImageBase, SYSTEM_ERROR* Error)
         if (Symbol->st_shndx == SHN_UNDEF)
         {
             void* Address = LookUpKExport(Name, Error);
-
             if (!Address)
             {
                 ErrorOut_Module_Link(-ENOENT);
@@ -186,9 +215,7 @@ void* Module_Link(void* ImageBase, SYSTEM_ERROR* Error)
 
             uint64_t Type = ELF64_R_TYPE(Relocation->r_info);
             uint64_t SymbolIndex = ELF64_R_SYM(Relocation->r_info);
-
             uint64_t TargetAddress = Module_SectionToVirtualAddress(ImageBase, ELFHeader, SectionHeaders, RelocSection->sh_info) + Relocation->r_offset;
-
             uint64_t SymbolValue;
 
             if (SymbolTable[SymbolIndex].st_shndx == SHN_ABS)
@@ -268,13 +295,30 @@ void* Module_Link(void* ImageBase, SYSTEM_ERROR* Error)
     return ImageBase;
 }
 
-void Module_Run(SYSTEM_ERROR* Error __unused)
+int Module_Run(SYSTEM_ERROR* Error)
 {
-    ModuleStart();
+    #define ErrorOut_Module_Run(Code) \
+        ErrorOut(Error, LinkerContext, Code, FUNC_Module_Run)
+        
+    if (Probe4Error(ModuleStart) || !ModuleStart)
+    {
+        ErrorOut_Module_Run(-EINVAL);
+        return Error->ErrorCode;
+    }
+
+    return ModuleStart(); /*Call out the "_start"*/
 }
 
-
-void Module_Exit(SYSTEM_ERROR* Error __unused)
+int Module_Exit(SYSTEM_ERROR* Error)
 {
-    ModuleExit();
+    #define ErrorOut_Module_Exit(Code) \
+        ErrorOut(Error, LinkerContext, Code, FUNC_Module_Exit)
+
+    if (Probe4Error(ModuleExit) || !ModuleExit)
+    {
+        ErrorOut_Module_Run(-EINVAL);
+        return Error->ErrorCode;
+    }
+
+    return ModuleExit(); /*Call out the "_exit"*/
 }

@@ -5,7 +5,7 @@
 #include <Emmiter.h>
 
 void
-ProcessInteger(__builtin_va_list* Arguments, FORMATTER_FLAGS* Flags, int Base, int Signed)
+_ProcessInteger(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags, int Base, int Signed)
 {
     char Buffer[64];
     int64_t Value = 0;
@@ -75,11 +75,11 @@ ProcessInteger(__builtin_va_list* Arguments, FORMATTER_FLAGS* Flags, int Base, i
     UnsignedToStringEx(UnSignedValue, Buffer, Base, (Flags->Length & 0x80) ? 1 : 0);
 
     /* Apply formatting (padding, prefixes, alignment) */
-    FormatOutput(Buffer, Flags, IsNegative, Base);
+    _FormatOutput(Buffer, Flags, IsNegative, Base);
 }
 
 void
-ProcessString(__builtin_va_list* Arguments, FORMATTER_FLAGS* Flags)
+_ProcessString(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags)
 {
     const char* String = __builtin_va_arg(*Arguments, const char*);
     if (!String)
@@ -119,7 +119,7 @@ ProcessString(__builtin_va_list* Arguments, FORMATTER_FLAGS* Flags)
 }
 
 void
-ProcessChar(__builtin_va_list* Arguments, FORMATTER_FLAGS* Flags)
+_ProcessChar(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags)
 {
     char Character = (char)__builtin_va_arg(*Arguments, int);
 
@@ -145,7 +145,7 @@ ProcessChar(__builtin_va_list* Arguments, FORMATTER_FLAGS* Flags)
 }
 
 void
-ProcessPointer(__builtin_va_list* Arguments, FORMATTER_FLAGS* Flags __unused)
+_ProcessPointer(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags __unused)
 {
     void* Pointer = __builtin_va_arg(*Arguments, void*);
     char Buffer[32];
@@ -156,7 +156,7 @@ ProcessPointer(__builtin_va_list* Arguments, FORMATTER_FLAGS* Flags __unused)
 }
 
 void
-FormatOutput(const char* Buffer, FORMATTER_FLAGS* Flags, int IsNegative, int Base)
+_FormatOutput(const char* Buffer, LIB_FORMATTER_FLAGS* Flags, int IsNegative, int Base)
 {
     int Length = StringLength(Buffer);
     int PrefixLength = 0;

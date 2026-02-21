@@ -39,7 +39,7 @@ Cflg := \
 FinalTemp := ../.Build
 LocalTemp := .Build
 
-ModuleName := GDT.ko
+ModuleName := Framebuffer.ko
 InstallPath := $(LocalTemp)
 
 EXTERNAL_LIB ?= ../Libraries/.Build/DEF_Library.a

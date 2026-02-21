@@ -64,21 +64,46 @@ void KernelMain(void)
         
         #ifdef BUILTIN_Loader
             FILE* LoaderFile = VFS_Open("/loader", VFS_OpenFlag_WRITEONLY, Error);
+            if (Probe4Error(LoaderFile) || !LoaderFile)
+            {
+                goto Error;
+            }
+
             LOADED_MODULE TestModule;
             LOADER_COMMAND_GET_ARGUMENTS TestModuleRequest =
             {
                 .Name = "Test.ko",
                 .Out = &TestModule
             };
-            VFS_IOControl(LoaderFile, LoaderCommand_GET, &TestModuleRequest, Error);
+
+            if (VFS_IOControl(LoaderFile, LoaderCommand_GET, &TestModuleRequest, Error) != GeneralOK)
+            {
+                goto Error;
+            }
         #endif
 
         #ifdef BUILTIN_Linker
             #ifdef BUILTIN_Loader
                 FILE* LinkerFile = VFS_Open("/linker", VFS_OpenFlag_WRITEONLY, Error);
-                VFS_IOControl(LinkerFile, LinkerCommand_LINK, TestModule.Address, Error);
+                if (Probe4Error(LinkerFile) || !LinkerFile)
+                {
+                    goto Error;
+                }
+                
+                if (Probe4Error(TestModule.Address) || !TestModule.Address)
+                {
+                    goto Error;
+                }
+
+                if (VFS_IOControl(LinkerFile, LinkerCommand_LINK, TestModule.Address, Error) != GeneralOK)
+                {
+                    goto Error;
+                }
             #endif
-            VFS_IOControl(LinkerFile, LinkerCommand_RUN, NULL, Error);
+            if (VFS_IOControl(LinkerFile, LinkerCommand_RUN, NULL, Error) != GeneralOK)
+            {
+                goto Error;
+            }
         #endif
 
     #else
@@ -86,25 +111,56 @@ void KernelMain(void)
         /*STANDARD*/
         #ifdef BUILTIN_Loader
             FILE* LoaderFile = VFS_Open("/loader", VFS_OpenFlag_WRITEONLY, Error);
+            if (Probe4Error(LoaderFile) || !LoaderFile)
+            {
+                goto Error;
+            }
+
             LOADED_MODULE STANDARD_InitModule;
             LOADER_COMMAND_GET_ARGUMENTS STANDARD_InitModuleRequest =
             {
                 .Name = "STANDARD_Init.ko",
                 .Out = &STANDARD_InitModule
             };
-            VFS_IOControl(LoaderFile, LoaderCommand_GET, &STANDARD_InitModuleRequest, Error);
+
+            if (VFS_IOControl(LoaderFile, LoaderCommand_GET, &STANDARD_InitModuleRequest, Error) != GeneralOK)
+            {
+                goto Error;
+            }
         #endif
 
         #ifdef BUILTIN_Linker
             #ifdef BUILTIN_Loader
                 FILE* LinkerFile = VFS_Open("/linker", VFS_OpenFlag_WRITEONLY, Error);
-                VFS_IOControl(LinkerFile, LinkerCommand_LINK, STANDARD_InitModule.Address, Error);
+                if (Probe4Error(LinkerFile) || !LinkerFile)
+                {
+                    goto Error;
+                }
+                
+                if (Probe4Error(STANDARD_InitModule.Address) || !STANDARD_InitModule.Address)
+                {
+                    goto Error;
+                }
+
+                if (VFS_IOControl(LinkerFile, LinkerCommand_LINK, STANDARD_InitModule.Address, Error) != GeneralOK)
+                {
+                    goto Error;
+                }
             #endif
-            VFS_IOControl(LinkerFile, LinkerCommand_RUN, NULL, Error);
+            if (VFS_IOControl(LinkerFile, LinkerCommand_RUN, NULL, Error) != GeneralOK)
+            {
+                goto Error;
+            }
         #endif
 
     #endif
 
+    for(;;)
+    {
+        __asm__("hlt");
+    }
+    
+Error:
     for(;;)
     {
         __asm__("hlt");

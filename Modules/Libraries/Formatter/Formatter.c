@@ -66,7 +66,7 @@ KrnPrintfColor(uint32_t __FG__, uint32_t __BG__, const char* Format, ...)
 void
 ProcessFormatSpecifier(const char** Format, __builtin_va_list* Arguments)
 {
-    FORMATTER_FLAGS Flags = {0};
+    LIB_FORMATTER_FLAGS Flags = {0};
 
     /* Parse flags: -, +, space, #, 0 */
     while (1)
@@ -180,32 +180,32 @@ ProcessFormatSpecifier(const char** Format, __builtin_va_list* Arguments)
     {
         case 'd':
         case 'I':
-            ProcessInteger(Arguments, &Flags, 10, 1);
+            _ProcessInteger(Arguments, &Flags, 10, 1);
             break;
         case 'u':
-            ProcessInteger(Arguments, &Flags, 10, 0);
+            _ProcessInteger(Arguments, &Flags, 10, 0);
             break;
         case 'x':
-            ProcessInteger(Arguments, &Flags, 16, 0);
+            _ProcessInteger(Arguments, &Flags, 16, 0);
             break;
         case 'X':
             Flags.Length |= 0x80; /* Uppercase flag */
-            ProcessInteger(Arguments, &Flags, 16, 0);
+            _ProcessInteger(Arguments, &Flags, 16, 0);
             break;
         case 'o':
-            ProcessInteger(Arguments, &Flags, 8, 0);
+            _ProcessInteger(Arguments, &Flags, 8, 0);
             break;
         case 'b':
-            ProcessInteger(Arguments, &Flags, 2, 0);
+            _ProcessInteger(Arguments, &Flags, 2, 0);
             break;
         case 's':
-            ProcessString(Arguments, &Flags);
+            _ProcessString(Arguments, &Flags);
             break;
         case 'c':
-            ProcessChar(Arguments, &Flags);
+            _ProcessChar(Arguments, &Flags);
             break;
         case 'p':
-            ProcessPointer(Arguments, &Flags);
+            _ProcessPointer(Arguments, &Flags);
             break;
         case 'N':
             /* Not implemented for security reasons */
