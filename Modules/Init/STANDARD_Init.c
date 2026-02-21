@@ -8,6 +8,7 @@
 /*LOCAL INCLUDES*/
 #include <Modules.h>
 #include <Init.h>
+#include <Framebuffer.h>
 
 /*LIB INCLUDES*/
 #include <Formatter.h>
@@ -36,6 +37,8 @@ static const char* Init_TraceMapper(int ID)
     return TraceTable[ID];
 }
 
+#define LOCALTests /*TODO: give modules a local conf header file just like __KCONF.h*/
+
 int _start(void) /*STANDARD NAME "_start"*/
 {
 	InitContext = RegisterErrorKeys("STANDARD_Init", Init_TraceMapper, Max_Init_Traces, Error);
@@ -45,6 +48,24 @@ int _start(void) /*STANDARD NAME "_start"*/
 	PInfo("Kickstarting Early Framebuffer...\n");
 	KickStartModule("Framebuffer.ko", Error);
 	PSuccess("Early Framebuffer OK\n");
+
+    #ifdef LOCALTests
+        FILE* FramebufferFile = VFS_Open("/framebuffer", VFS_OpenFlag_WRITEONLY, Error);
+
+        FRAMEBUFFER_DEVICE FramebufferInformation;
+
+        VFS_IOControl(FramebufferFile, Request_FramebufferData, &FramebufferInformation, Error);
+
+        uint32_t Color = 0xFF0000;
+        long Size = FramebufferInformation.Size;
+
+        for (long Iteration = 0; Iteration < Size; Iteration += sizeof(uint32_t))
+        {
+            VFS_Write(FramebufferFile, &Color, sizeof(Color), Error);
+        }
+
+        VFS_Close(FramebufferFile, Error);
+    #endif
 
     return GeneralOK;
 }

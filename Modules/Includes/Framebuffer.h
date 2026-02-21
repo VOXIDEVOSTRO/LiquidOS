@@ -25,8 +25,14 @@ enum
     FUNC_Framebuffer_Read,
     FUNC_Framebuffer_GetAttribute,
     FUNC_Framebuffer_Initialize,
+    FUNC_Framebuffer_Ioctl,
 
 	Max_Framebuffer_Traces,
+};
+
+enum
+{
+    Request_FramebufferData = 1,
 };
 
 int Framebuffer_Initialize(SYSTEM_ERROR* Error);

@@ -16,6 +16,7 @@ static const char* Framebuffer_TraceMapper(int ID)
         "Modules/Framebuffer/*->Framebuffer_Read",
         "Modules/Framebuffer/*->Framebuffer_GetAttribute",
         "Modules/Framebuffer/*->Framebuffer_Initialize",
+        "Modules/Framebuffer/*->Framebuffer_Ioctl",
     };
 
     if (ID < 0 || ID >= Max_Framebuffer_Traces)
@@ -108,6 +109,41 @@ static long Framebuffer_Read(SYSTEM_FILE* File, void* Buffer, uint64_t Length, S
     return (long)Length;
 }
 
+static long Framebuffer_Ioctl(SYSTEM_FILE* File __unused, uint64_t Request, void* Arguments, SYSTEM_ERROR* Error)
+{
+    #define ErrorOut_Framebuffer_Ioctl(Code) \
+        ErrorOut(Error, FramebufferContext, Code, FUNC_Framebuffer_Ioctl)
+
+    switch (Request)
+    {
+        case Request_FramebufferData:
+        {
+            if (Probe4Error(Arguments) || !Arguments)
+            {
+                ErrorOut_Framebuffer_Ioctl(-EINVAL);
+                return Error->ErrorCode;
+            }
+
+            FRAMEBUFFER_DEVICE* Information = (FRAMEBUFFER_DEVICE*)Arguments;
+
+            Information->Width = FramebufferDevice.Width;
+            Information->Height = FramebufferDevice.Height;
+            Information->Pitch = FramebufferDevice.Pitch;
+            Information->Bpp = FramebufferDevice.Bpp;
+            Information->Address = FramebufferDevice.Address;
+            Information->Size = FramebufferDevice.Size;
+
+            return GeneralOK;
+        }
+
+        default:
+        {
+            ErrorOut_Framebuffer_Ioctl(-EINVAL);
+            return Error->ErrorCode;
+        }
+    }
+}
+
 static int Framebuffer_GetAttribute(SYSTEM_NODE* Node, VFS_STAT* Stat, SYSTEM_ERROR* Error)
 {
     #define ErrorOut_Framebuffer_GetAttribute(Code) \
@@ -132,7 +168,7 @@ static SYSTEM_OPERATIONS Framebuffer_Operations =
     .Close   = Framebuffer_Close,
     .Read    = Framebuffer_Read,
     .Write   = Framebuffer_Write,
-    .Ioctl   = NULL,
+    .Ioctl   = Framebuffer_Ioctl,
     .Getattr = Framebuffer_GetAttribute,
     .Setattr = NULL
 };
