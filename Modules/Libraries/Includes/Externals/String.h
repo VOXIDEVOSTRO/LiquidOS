@@ -1,5 +1,6 @@
 #pragma once
-#include <__KCONF.h>
+#include <CTools.h>
+#include <Types.h>
 
 /*string.h*/ /*totally not stolen from: https://github.com/VOXIDEVOSTRO/AxeialOS/blob/main/Kernel/KrnlLibs/Includes/String.h*/
 void   strcpy(char* __Dest__, const char* __Src__, uint32_t __MaxLen__);

@@ -34,7 +34,8 @@ Cflg := \
 -O2 \
 -g \
 -I../../Core/Headers \
--IIncludes
+-IIncludes \
+-I../Includes
 
 FinalTemp := ../.Build
 LocalTemp := .Build

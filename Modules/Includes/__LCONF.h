@@ -24,3 +24,13 @@
 /*|_>*/ #define M_SUCCESSES
 
 /*========================================*/
+
+/*
+    Fonts Stuff
+*/
+/*__>*/ /*Limits*/
+/*|_>*/ #define MaxFontMap 16
+/*|_>*/ #define MaxFontEntries 256
+/*|*/
+/*|_>*/ /*Size Toggles*/
+/*|_>*/ #define __F16

@@ -34,10 +34,10 @@ KPrintfColor(uint32_t __FG__, uint32_t __BG__, const char* Format, ...)
 {
     
     
-    uint32_t OldFG = Console.TXColor;
-    uint32_t OldBG = Console.BGColor;
+    uint32_t OldFG = Console.TextColor;
+    uint32_t OldBG = Console.BackgroundColor;
 
-    SetBGColor(__FG__, __BG__);
+    SetBackgroundColor(__FG__, __BG__);
 
     __builtin_va_list Arguments;
     __builtin_va_start(Arguments, Format);
@@ -57,7 +57,7 @@ KPrintfColor(uint32_t __FG__, uint32_t __BG__, const char* Format, ...)
     }
 
     __builtin_va_end(Arguments);
-    SetBGColor(OldFG, OldBG);
+    SetBackgroundColor(OldFG, OldBG);
     R
 }
 

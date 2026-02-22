@@ -1,4 +1,5 @@
-#include <__KCONF.h>
+#include <CTools.h>
+#include <Types.h>
 
 /*Totally not stolen from https://github.com/VOXIDEVOSTRO/AxeialOS/blob/main/Kernel/KrnlLibs/String.c*/
 

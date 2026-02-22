@@ -3,6 +3,8 @@
 /*Local*/
 #include <Externals/Formatter.h>
 #include <Externals/Emmiter.h>
+#include <Externals/DefaultColors.h>
+#include <Externals/Console.h>
 
 void
 LOG_PError(const char* Format, ...)
@@ -12,7 +14,11 @@ LOG_PError(const char* Format, ...)
         Format = "(null)";
     }
 
-    PutString("[    ERROR    ]: ");
+    PutString("[");
+    SetBackgroundColor(ClrError, ClrInvisible);
+    PutString("    ERROR    ");
+    SetBackgroundColor(ClrNormal, ClrInvisible);
+    PutString("]: ");
 
     __builtin_va_list Arguments;
     __builtin_va_start(Arguments, Format);
@@ -42,7 +48,11 @@ LOG_PWarn(const char* Format, ...)
         Format = "(null)";
     }
 
-    PutString("[   WARNING   ]: ");
+    PutString("[");
+    SetBackgroundColor(ClrWarn, ClrInvisible);
+    PutString("   WARNING   ");
+    SetBackgroundColor(ClrNormal, ClrInvisible);
+    PutString("]: ");
 
     __builtin_va_list Arguments;
     __builtin_va_start(Arguments, Format);
@@ -72,7 +82,11 @@ LOG_PInfo(const char* Format, ...)
         Format = "(null)";
     }
 
-    PutString("[ INFORMATION ]: ");
+    PutString("[");
+    SetBackgroundColor(ClrInfo, ClrInvisible);
+    PutString(" INFORMATION ");
+    SetBackgroundColor(ClrNormal, ClrInvisible);
+    PutString("]: ");
 
     __builtin_va_list Arguments;
     __builtin_va_start(Arguments, Format);
@@ -102,6 +116,7 @@ LOG_PDebug(const char* Format, ...)
         Format = "(null)";
     }
 
+    SetBackgroundColor(ClrDebug, ClrInvisible);
     PutString("[    DEBUG    ]: ");
 
     __builtin_va_list Arguments;
@@ -132,7 +147,11 @@ LOG_PSuccess(const char* Format, ...)
         Format = "(null)";
     }
 
-    PutString("[   SUCCESS   ]: ");
+    PutString("[");
+    SetBackgroundColor(ClrSuccess, ClrInvisible);
+    PutString("   SUCCESS   ");
+    SetBackgroundColor(ClrNormal, ClrInvisible);
+    PutString("]: ");
 
     __builtin_va_list Arguments;
     __builtin_va_start(Arguments, Format);

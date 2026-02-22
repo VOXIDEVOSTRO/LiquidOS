@@ -1,6 +1,7 @@
 #pragma once
 
 #include <__KCONF.h>
+#include <Types.h>
 
 typedef struct
 {

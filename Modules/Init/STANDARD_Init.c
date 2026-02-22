@@ -15,6 +15,7 @@
 /*LIB INCLUDES*/
 #include <Externals/Formatter.h>
 #include <Externals/Emmiter.h>
+#include <Externals/Console.h>
 
 /*THIS IS A MODULARUS CORE STANDARD FILE WITH A STANDARD NAME OF "STANDARD_Init"
   The job of this file is to handle ITS own modules and init sequence.*/
@@ -45,27 +46,21 @@ int _start(void) /*STANDARD NAME "_start"*/
 	Emitter_KickStart(Error);
 
 	/*Kickstart Framebuffer*/
-	M_PInfo("Kickstarting Early Framebuffer...\n");
 	KickStartModule("Framebuffer.ko", Error);
-	M_PSuccess("Early Framebuffer OK\n");
 
-    #ifdef LOCALTests
-        FILE* FramebufferFile = VFS_Open("/framebuffer", VFS_OpenFlag_WRITEONLY, Error);
-
-        FRAMEBUFFER_DEVICE FramebufferInformation;
-
-        VFS_IOControl(FramebufferFile, Request_FramebufferData, &FramebufferInformation, Error);
-
-        uint32_t /*DEFAULT RGB*/ Color = 0xFF0000; /*Red*/
-        long Size = FramebufferInformation.Size;
-
-        for (long Iteration = 0; Iteration < Size; Iteration += sizeof(uint32_t))
-        {
-            VFS_Write(FramebufferFile, &Color, sizeof(Color), Error);
-        }
-
-        VFS_Close(FramebufferFile, Error);
-    #endif
+    /*Kickstart Console*/
+    FILE* FramebufferFile = VFS_Open("/framebuffer", VFS_OpenFlag_WRITEONLY, Error);
+    FRAMEBUFFER_DEVICE FramebufferInformation;
+    VFS_IOControl(FramebufferFile, Request_FramebufferData, &FramebufferInformation, Error);
+    VFS_Close(FramebufferFile, Error);
+	KickStartConsole((uint32_t*)FramebufferInformation.Address, (uint32_t)FramebufferInformation.Width, (uint32_t)FramebufferInformation.Height);
+	
+    /*Log test*/
+    M_PInfo("This is a Information log\n");
+    M_PSuccess("This is a Success log\n");
+    M_PWarn("This is a Warning log\n");
+    M_PError("This is a Error log\n");
+    M_PDebug("This is a Debug log\n");
 
     return GeneralOK;
 }

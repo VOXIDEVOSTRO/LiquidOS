@@ -1,19 +1,25 @@
 #include <__KCONF.h>
 #include <VirtualFileSystem.h>
 
-static FILE* EmitterDevice;
+#include <Externals/Console.h>
+
+static FILE* UARTEmitterDevice;
 
 void Emitter_KickStart(SYSTEM_ERROR* Error)
 {
-    EmitterDevice = VFS_Open("/uart", VFS_OpenFlag_WRITEONLY, Error);
+    UARTEmitterDevice = VFS_Open("/uart", VFS_OpenFlag_WRITEONLY, Error);
 }
 
 void PutChar(char Character)
 {
     SYSTEM_ERROR Err;
     SYSTEM_ERROR* Error = &Err;
+
+    /*Screen*/
+    PutChar2Console(Character);
     
-    VFS_Write(EmitterDevice, &Character, 1, Error);
+    /*UART*/
+    VFS_Write(UARTEmitterDevice, &Character, 1, Error);
 }
 
 void PutString(const char* String)
