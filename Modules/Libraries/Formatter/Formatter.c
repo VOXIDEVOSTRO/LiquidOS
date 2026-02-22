@@ -1,11 +1,11 @@
 #include <__KCONF.h>
 
 /*Local*/
-#include <Formatter.h>
-#include <Emmiter.h>
+#include <Externals/Formatter.h>
+#include <Externals/Emmiter.h>
 
 void
-KrnPrintf(const char* Format, ...)
+KPrintf(const char* Format, ...)
 {
     __builtin_va_list Arguments;
     __builtin_va_start(Arguments, Format);
@@ -15,7 +15,7 @@ KrnPrintf(const char* Format, ...)
         if (*Format == '%')
         {
             Format++;
-            ProcessFormatSpecifier(&Format, &Arguments);
+            KFormatSpecifier(&Format, &Arguments);
         }
         else
         {
@@ -30,7 +30,7 @@ KrnPrintf(const char* Format, ...)
 /*
 
 void
-KrnPrintfColor(uint32_t __FG__, uint32_t __BG__, const char* Format, ...)
+KPrintfColor(uint32_t __FG__, uint32_t __BG__, const char* Format, ...)
 {
     
     
@@ -47,7 +47,7 @@ KrnPrintfColor(uint32_t __FG__, uint32_t __BG__, const char* Format, ...)
         if (*Format == '%')
         {
             Format++;
-            ProcessFormatSpecifier(&Format, &Arguments);
+            KFormatSpecifier(&Format, &Arguments);
         }
         else
         {
@@ -64,7 +64,7 @@ KrnPrintfColor(uint32_t __FG__, uint32_t __BG__, const char* Format, ...)
 */
 
 void
-ProcessFormatSpecifier(const char** Format, __builtin_va_list* Arguments)
+KFormatSpecifier(const char** Format, __builtin_va_list* Arguments)
 {
     LIB_FORMATTER_FLAGS Flags = {0};
 
@@ -180,32 +180,32 @@ ProcessFormatSpecifier(const char** Format, __builtin_va_list* Arguments)
     {
         case 'd':
         case 'I':
-            _ProcessInteger(Arguments, &Flags, 10, 1);
+            HELP_ProcessInteger(Arguments, &Flags, 10, 1);
             break;
         case 'u':
-            _ProcessInteger(Arguments, &Flags, 10, 0);
+            HELP_ProcessInteger(Arguments, &Flags, 10, 0);
             break;
         case 'x':
-            _ProcessInteger(Arguments, &Flags, 16, 0);
+            HELP_ProcessInteger(Arguments, &Flags, 16, 0);
             break;
         case 'X':
             Flags.Length |= 0x80; /* Uppercase flag */
-            _ProcessInteger(Arguments, &Flags, 16, 0);
+            HELP_ProcessInteger(Arguments, &Flags, 16, 0);
             break;
         case 'o':
-            _ProcessInteger(Arguments, &Flags, 8, 0);
+            HELP_ProcessInteger(Arguments, &Flags, 8, 0);
             break;
         case 'b':
-            _ProcessInteger(Arguments, &Flags, 2, 0);
+            HELP_ProcessInteger(Arguments, &Flags, 2, 0);
             break;
         case 's':
-            _ProcessString(Arguments, &Flags);
+            HELP_ProcessString(Arguments, &Flags);
             break;
         case 'c':
-            _ProcessChar(Arguments, &Flags);
+            HELP_ProcessChar(Arguments, &Flags);
             break;
         case 'p':
-            _ProcessPointer(Arguments, &Flags);
+            HELP_ProcessPointer(Arguments, &Flags);
             break;
         case 'N':
             /* Not implemented for security reasons */

@@ -1,11 +1,11 @@
 #include <Errors.h>
 
 /*Local*/
-#include <Formatter.h>
-#include <Emmiter.h>
+#include <Externals/Formatter.h>
+#include <Externals/Emmiter.h>
 
 void
-PError(const char* Format, ...)
+LOG_PError(const char* Format, ...)
 {
     if (Probe4Error(Format) || !Format)
     {
@@ -22,7 +22,7 @@ PError(const char* Format, ...)
         if (*Format == '%')
         {
             Format++;
-            ProcessFormatSpecifier(&Format, &Arguments);
+            KFormatSpecifier(&Format, &Arguments);
         }
         else
         {
@@ -35,7 +35,7 @@ PError(const char* Format, ...)
 }
 
 void
-PWarn(const char* Format, ...)
+LOG_PWarn(const char* Format, ...)
 {
     if (Probe4Error(Format) || !Format)
     {
@@ -52,7 +52,7 @@ PWarn(const char* Format, ...)
         if (*Format == '%')
         {
             Format++;
-            ProcessFormatSpecifier(&Format, &Arguments);
+            KFormatSpecifier(&Format, &Arguments);
         }
         else
         {
@@ -65,7 +65,7 @@ PWarn(const char* Format, ...)
 }
 
 void
-PInfo(const char* Format, ...)
+LOG_PInfo(const char* Format, ...)
 {
     if (Probe4Error(Format) || !Format)
     {
@@ -82,7 +82,7 @@ PInfo(const char* Format, ...)
         if (*Format == '%')
         {
             Format++;
-            ProcessFormatSpecifier(&Format, &Arguments);
+            KFormatSpecifier(&Format, &Arguments);
         }
         else
         {
@@ -95,7 +95,7 @@ PInfo(const char* Format, ...)
 }
 
 void
-_PDebug(const char* Format, ...)
+LOG_PDebug(const char* Format, ...)
 {
     if (Probe4Error(Format) || !Format)
     {
@@ -112,7 +112,7 @@ _PDebug(const char* Format, ...)
         if (*Format == '%')
         {
             Format++;
-            ProcessFormatSpecifier(&Format, &Arguments);
+            KFormatSpecifier(&Format, &Arguments);
         }
         else
         {
@@ -125,7 +125,7 @@ _PDebug(const char* Format, ...)
 }
 
 void
-PSuccess(const char* Format, ...)
+LOG_PSuccess(const char* Format, ...)
 {
     if (Probe4Error(Format) || !Format)
     {
@@ -142,7 +142,7 @@ PSuccess(const char* Format, ...)
         if (*Format == '%')
         {
             Format++;
-            ProcessFormatSpecifier(&Format, &Arguments);
+            KFormatSpecifier(&Format, &Arguments);
         }
         else
         {

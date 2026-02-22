@@ -1,5 +1,6 @@
 /*CONFIG*/
-#include <__KCONF.h>
+#include <__KCONF.h> /*Global Config, Modularus local*/
+#include <__LCONF.h> /*Local Config*/
 
 /*CORE INCLUDES*/
 #include <VirtualFileSystem.h>
@@ -9,10 +10,11 @@
 #include <Modules.h>
 #include <Init.h>
 #include <Framebuffer.h>
+#include <Logging.h>
 
 /*LIB INCLUDES*/
-#include <Formatter.h>
-#include <Emmiter.h>
+#include <Externals/Formatter.h>
+#include <Externals/Emmiter.h>
 
 /*THIS IS A MODULARUS CORE STANDARD FILE WITH A STANDARD NAME OF "STANDARD_Init"
   The job of this file is to handle ITS own modules and init sequence.*/
@@ -37,17 +39,15 @@ static const char* Init_TraceMapper(int ID)
     return TraceTable[ID];
 }
 
-#define LOCALTests /*TODO: give modules a local conf header file just like __KCONF.h*/
-
 int _start(void) /*STANDARD NAME "_start"*/
 {
 	InitContext = RegisterErrorKeys("STANDARD_Init", Init_TraceMapper, Max_Init_Traces, Error);
 	Emitter_KickStart(Error);
 
 	/*Kickstart Framebuffer*/
-	PInfo("Kickstarting Early Framebuffer...\n");
+	M_PInfo("Kickstarting Early Framebuffer...\n");
 	KickStartModule("Framebuffer.ko", Error);
-	PSuccess("Early Framebuffer OK\n");
+	M_PSuccess("Early Framebuffer OK\n");
 
     #ifdef LOCALTests
         FILE* FramebufferFile = VFS_Open("/framebuffer", VFS_OpenFlag_WRITEONLY, Error);
@@ -56,7 +56,7 @@ int _start(void) /*STANDARD NAME "_start"*/
 
         VFS_IOControl(FramebufferFile, Request_FramebufferData, &FramebufferInformation, Error);
 
-        uint32_t Color = 0xFF0000;
+        uint32_t /*DEFAULT RGB*/ Color = 0xFF0000; /*Red*/
         long Size = FramebufferInformation.Size;
 
         for (long Iteration = 0; Iteration < Size; Iteration += sizeof(uint32_t))

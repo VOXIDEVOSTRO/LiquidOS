@@ -1,11 +1,11 @@
 #include <__KCONF.h>
 
 /*Local*/
-#include <Formatter.h>
-#include <Emmiter.h>
+#include <Externals/Formatter.h>
+#include <Externals/Emmiter.h>
 
 void
-_ProcessInteger(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags, int Base, int Signed)
+HELP_ProcessInteger(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags, int Base, int Signed)
 {
     char Buffer[64];
     int64_t Value = 0;
@@ -72,14 +72,14 @@ _ProcessInteger(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags, int Ba
     }
 
     /* Convert unsigned value to string in specified base */
-    UnsignedToStringEx(UnSignedValue, Buffer, Base, (Flags->Length & 0x80) ? 1 : 0);
+    HELP_UnsignedToStringEx(UnSignedValue, Buffer, Base, (Flags->Length & 0x80) ? 1 : 0);
 
     /* Apply formatting (padding, prefixes, alignment) */
-    _FormatOutput(Buffer, Flags, IsNegative, Base);
+    HELP_FormatOutput(Buffer, Flags, IsNegative, Base);
 }
 
 void
-_ProcessString(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags)
+HELP_ProcessString(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags)
 {
     const char* String = __builtin_va_arg(*Arguments, const char*);
     if (!String)
@@ -87,7 +87,7 @@ _ProcessString(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags)
         String = "(null)";
     }
 
-    int Length = StringLength(String);
+    int Length = HELP_StringLength(String);
     if (Flags->HasPrecision && Flags->Precision < Length)
     {
         Length = Flags->Precision;
@@ -119,7 +119,7 @@ _ProcessString(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags)
 }
 
 void
-_ProcessChar(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags)
+HELP_ProcessChar(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags)
 {
     char Character = (char)__builtin_va_arg(*Arguments, int);
 
@@ -145,20 +145,20 @@ _ProcessChar(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags)
 }
 
 void
-_ProcessPointer(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags __unused)
+HELP_ProcessPointer(__builtin_va_list* Arguments, LIB_FORMATTER_FLAGS* Flags __unused)
 {
     void* Pointer = __builtin_va_arg(*Arguments, void*);
     char Buffer[32];
 
     PutString("0x");
-    UnsignedToStringEx((uintptr_t)Pointer, Buffer, 16, 0);
+    HELP_UnsignedToStringEx((uintptr_t)Pointer, Buffer, 16, 0);
     PutString(Buffer);
 }
 
 void
-_FormatOutput(const char* Buffer, LIB_FORMATTER_FLAGS* Flags, int IsNegative, int Base)
+HELP_FormatOutput(const char* Buffer, LIB_FORMATTER_FLAGS* Flags, int IsNegative, int Base)
 {
-    int Length = StringLength(Buffer);
+    int Length = HELP_StringLength(Buffer);
     int PrefixLength = 0;
     char Prefix[4] = {0};
 
@@ -231,7 +231,7 @@ _FormatOutput(const char* Buffer, LIB_FORMATTER_FLAGS* Flags, int IsNegative, in
 }
 
 void
-UnsignedToStringEx(uint64_t Value, char* Buffer, int Base, int UpperCase)
+HELP_UnsignedToStringEx(uint64_t Value, char* Buffer, int Base, int UpperCase)
 {
     int Iteration = 0;
     if (Value == 0)
@@ -256,14 +256,14 @@ UnsignedToStringEx(uint64_t Value, char* Buffer, int Base, int UpperCase)
     }
 
     Buffer[Iteration] = '\0';
-    ReverseString(Buffer, Iteration);
+    HELP_ReverseString(Buffer, Iteration);
 }
 
 void
-PrintInteger(int Value, int Base, int UpperCase)
+HELP_PrintInteger(int Value, int Base, int UpperCase)
 {
     char Buffer[32];
-    IntegerToString(Value, Buffer, Base);
+    HELP_IntegerToString(Value, Buffer, Base);
 
     if (UpperCase)
     {
@@ -276,14 +276,14 @@ PrintInteger(int Value, int Base, int UpperCase)
         }
     }
 
-    PrintString(Buffer);
+    HELP_PrintString(Buffer);
 }
 
 void
-PrintUnsigned(uint32_t Value, int Base, int UpperCase)
+HELP_PrintUnsigned(uint32_t Value, int Base, int UpperCase)
 {
     char Buffer[32];
-    UnsignedToString(Value, Buffer, Base);
+    HELP_UnsignedToString(Value, Buffer, Base);
 
     if (UpperCase)
     {
@@ -296,11 +296,11 @@ PrintUnsigned(uint32_t Value, int Base, int UpperCase)
         }
     }
 
-    PrintString(Buffer);
+    HELP_PrintString(Buffer);
 }
 
 void
-PrintString(const char* String)
+HELP_PrintString(const char* String)
 {
     if (String == 0)
     {
@@ -311,20 +311,20 @@ PrintString(const char* String)
 }
 
 void
-PrintChar(char Character)
+HELP_PrintChar(char Character)
 {
     PutChar(Character);
 }
 
 void
-PrintPointer(void* Pointer)
+HELP_PrintPointer(void* Pointer)
 {
     PutString("0x");
-    PrintUnsigned((uint32_t)(uintptr_t)Pointer, 16, 0);
+    HELP_PrintUnsigned((uint32_t)(uintptr_t)Pointer, 16, 0);
 }
 
 int
-StringLength(const char* String)
+HELP_StringLength(const char* String)
 {
     int Length = 0;
     while (String[Length])
@@ -335,7 +335,7 @@ StringLength(const char* String)
 }
 
 void
-ReverseString(char* String, int Length)
+HELP_ReverseString(char* String, int Length)
 {
     int Start = 0;
     int End = Length - 1;
@@ -351,7 +351,7 @@ ReverseString(char* String, int Length)
 }
 
 void
-IntegerToString(int Value, char* Buffer, int Base)
+HELP_IntegerToString(int Value, char* Buffer, int Base)
 {
     int Iteration  = 0;
     int IsNegative = 0;
@@ -382,11 +382,11 @@ IntegerToString(int Value, char* Buffer, int Base)
     }
 
     Buffer[Iteration] = '\0';
-    ReverseString(Buffer, Iteration);
+    HELP_ReverseString(Buffer, Iteration);
 }
 
 void
-UnsignedToString(uint32_t Value, char* Buffer, int Base)
+HELP_UnsignedToString(uint32_t Value, char* Buffer, int Base)
 {
     int Iteration = 0;
 
@@ -405,5 +405,5 @@ UnsignedToString(uint32_t Value, char* Buffer, int Base)
     }
 
     Buffer[Iteration] = '\0';
-    ReverseString(Buffer, Iteration);
+    HELP_ReverseString(Buffer, Iteration);
 }

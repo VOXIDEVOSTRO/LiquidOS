@@ -1,6 +1,15 @@
+/*Config*/
+#include <__KCONF.h>
+#include <__LCONF.h>
+
+/*Local*/
 #include <Framebuffer.h>
+
+/*Core*/
 #include <Boot/PreBoot.h>
-#include <String.h>
+
+/*Library/Externals*/
+#include <Externals/String.h>
 
 static FRAMEBUFFER_DEVICE FramebufferDevice;
 static SYSTEM_NODE* FramebufferNode = NULL;
